@@ -7,8 +7,8 @@ import (
 
 /* A node within the linked list containing the data and pointer to next node */
 type linkedListNode[T any] struct {
-	Data T
-	Next *linkedListNode[T]
+	data T
+	next *linkedListNode[T]
 }
 
 /* The main linked list structure with all associated methods */
@@ -51,20 +51,29 @@ func (ll *LinkedList[T]) getNode(index int) (*linkedListNode[T], error) {
 		if i == index {
 			break
 		}
-		node = node.Next
+		node = node.next
 	}
 
 	return node, nil
 }
 
+func (ll *LinkedList[T]) ValueAt(index int) (*T, error) {
+	data, err := ll.getNode(index)
+	if err != nil {
+		return nil, err
+	}
+
+	return &data.data, nil
+}
+
 /* Appends data to the end of the list */
 func (ll *LinkedList[T]) Append(data T) {
-	node := &linkedListNode[T]{Data: data, Next: nil}
+	node := &linkedListNode[T]{data: data, next: nil}
 
 	if ll.length < 1 {
 		ll.head = node
 	} else {
-		ll.tail.Next = node
+		ll.tail.next = node
 	}
 
 	ll.tail = node
@@ -74,7 +83,7 @@ func (ll *LinkedList[T]) Append(data T) {
 /* Inserts data at the beginning of the list */
 func (ll *LinkedList[T]) Insert(data T) {
 	next := ll.head
-	ll.head = &linkedListNode[T]{Data: data, Next: next}
+	ll.head = &linkedListNode[T]{data: data, next: next}
 	ll.length++
 }
 
@@ -85,8 +94,8 @@ func (ll *LinkedList[T]) InsertAt(index int, data T) error {
 		return err
 	}
 
-	node := &linkedListNode[T]{Data: data, Next: previousNode.Next}
-	previousNode.Next = node
+	node := &linkedListNode[T]{data: data, next: previousNode.next}
+	previousNode.next = node
 	ll.length++
 	return nil
 }
@@ -97,7 +106,7 @@ func (ll *LinkedList[T]) Shift() (*T, error) {
 		return nil, fmt.Errorf("cannot shift an empty list")
 	}
 
-	data := &ll.head.Data
+	data := &ll.head.data
 
 	if ll.length == 1 {
 		ll.head = nil
@@ -105,7 +114,7 @@ func (ll *LinkedList[T]) Shift() (*T, error) {
 		return data, nil
 	}
 
-	ll.head = ll.head.Next
+	ll.head = ll.head.next
 	ll.length--
 
 	return data, nil
@@ -119,17 +128,17 @@ func (ll *LinkedList[T]) Pop() (*T, error) {
 
 	var data *T
 	if ll.length == 1 {
-		data = &ll.head.Data
+		data = &ll.head.data
 		ll.head = nil
 		ll.tail = nil
 	} else {
 		node := ll.head
-		for node.Next != ll.tail {
-			node = node.Next
+		for node.next != ll.tail {
+			node = node.next
 		}
 
-		data = &ll.tail.Data
-		node.Next = nil
+		data = &ll.tail.data
+		node.next = nil
 		ll.tail = node
 	}
 
@@ -144,8 +153,8 @@ func (ll *LinkedList[T]) PopAt(index int) (*T, error) {
 		return nil, err
 	}
 
-	data := node.Next.Data
-	node.Next = node.Next.Next
+	data := node.next.data
+	node.next = node.next.next
 	ll.length--
 
 	return &data, nil
@@ -162,8 +171,8 @@ func (ll *LinkedList[T]) Print() {
 
 	next := ll.head
 	for next != nil {
-		fmt.Fprintf(&buf, "%v ", next.Data)
-		next = next.Next
+		fmt.Fprintf(&buf, "%v ", next.data)
+		next = next.next
 	}
 
 	fmt.Printf("{ %s}\n", buf.String())
@@ -174,7 +183,7 @@ func (ll *LinkedList[T]) PrintAt(index int) {
 	if node, err := ll.getNode(index); err != nil {
 		fmt.Println(err)
 	} else {
-		fmt.Println(node.Data)
+		fmt.Println(node.data)
 	}
 }
 
