@@ -149,7 +149,7 @@ func (ll *linkedList[T]) Clear() {
 	ll.tail = nil
 }
 
-/* Prints the contents of the entire list */
+// Prints the contents of the entire list
 func (ll *linkedList[T]) Print() {
 	var buf strings.Builder
 
