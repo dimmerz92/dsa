@@ -8,6 +8,7 @@ import (
 type linkedListNode[T any] struct {
 	Value T
 	Next  *linkedListNode[T]
+	Prev  *linkedListNode[T]
 }
 
 type linkedList[T any] struct {
@@ -39,12 +40,29 @@ func (ll *linkedList[T]) boundaryCheck(index int) int {
 func (ll *linkedList[T]) getNode(index int) *linkedListNode[T] {
 	index = ll.boundaryCheck(index)
 
-	node := ll.head
-	for i := 0; i <= index; i++ {
-		if i == index {
-			break
+	if index == 0 {
+		return ll.head
+	} else if index == ll.length-1 {
+		return ll.tail
+	}
+
+	var node *linkedListNode[T]
+	if min(index, ll.length-index) != index {
+		node = ll.tail
+		for i := ll.length - 1; i >= index; i-- {
+			if i == index {
+				break
+			}
+			node = node.Prev
 		}
-		node = node.Next
+	} else {
+		node = ll.head
+		for i := 0; i <= index; i++ {
+			if i == index {
+				break
+			}
+			node = node.Next
+		}
 	}
 
 	return node
@@ -67,6 +85,7 @@ func (ll *linkedList[T]) Append(data T) {
 		ll.head = node
 		ll.tail = ll.head
 	} else {
+		node.Prev = ll.tail
 		ll.tail.Next = node
 		ll.tail = node
 	}
@@ -82,16 +101,16 @@ func (ll *linkedList[T]) Insert(data T, index int) {
 	}
 
 	node := &linkedListNode[T]{Value: data}
-	if index == ll.length-1 || index == -1 {
-		node.Next = ll.tail
-		ll.getNode(-2).Next = node
-	} else if ll.length > 0 && (index == 0 || index == -ll.length) {
+	if index == 0 || index == -ll.length {
 		node.Next = ll.head
+		ll.head.Prev = node
 		ll.head = node
 	} else {
-		previousNode := ll.getNode(ll.boundaryCheck(index) - 1)
-		node.Next = previousNode.Next
-		previousNode.Next = node
+		current := ll.getNode(index)
+		node.Next = current
+		node.Prev = current.Prev
+		current.Prev.Next = node
+		current.Prev = node
 	}
 
 	ll.length++
@@ -105,21 +124,22 @@ func (ll *linkedList[T]) Pop(index int) T {
 		value = ll.head.Value
 		ll.head = nil
 		ll.tail = ll.head
-	} else if ll.length > 0 && (index == 0 || index == -ll.length) {
+	} else if index == 0 || index == -ll.length {
 		value = ll.head.Value
+		ll.head.Next.Prev = nil
 		ll.head = ll.head.Next
 	} else if index == ll.length-1 || index == -1 {
-		node := ll.getNode(-2)
-		value = node.Next.Value
-		ll.tail = node
-		ll.tail.Next = nil
+		value = ll.tail.Value
+		ll.tail.Prev.Next = nil
+		ll.tail = ll.tail.Prev
 	} else {
-		previousNode := ll.getNode(ll.boundaryCheck(index) - 1)
-		value = previousNode.Next.Value
-		previousNode.Next = previousNode.Next.Next
+		node := ll.getNode(index)
+		value = node.Value
+		node.Next.Prev = node.Prev
+		node.Prev.Next = node.Next
 	}
-	ll.length--
 
+	ll.length--
 	return value
 }
 
